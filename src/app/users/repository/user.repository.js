@@ -1,5 +1,4 @@
-import users from "..model/user.model.js";
-
+import users from "../model/user.js";
 export const create = async (data) => {
   const user = {
     name: data.name,
@@ -7,6 +6,7 @@ export const create = async (data) => {
     password: data.password,
   };
   users.push(user);
+  console.log(users);
   return user;
 };
 

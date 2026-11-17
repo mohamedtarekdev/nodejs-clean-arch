@@ -1,5 +1,5 @@
 import * as userRepo from "../repository/user.repository.js";
-import { hashPassword } from "../utils/hash.js";
+import { comparePassword, hashPassword } from "../utils/hash.js";
 import { signAccessToken, signRefreshToken } from "../utils/jwt.js";
 
 export const register = async (data) => {
@@ -13,12 +13,10 @@ export const register = async (data) => {
 
 export const login = async (data) => {
   const user = await userRepo.findByEmail(data.email);
+
   if (!user) throw new Error("Invalid Data");
 
-  const isValidPassword = await userRepo.comparePassword(
-    data.password,
-    user.password,
-  );
+  const isValidPassword = await comparePassword(data.password, user.password);
   if (!isValidPassword) throw new Error("Invalid Data");
 
   const accessToken = await signAccessToken(user);
