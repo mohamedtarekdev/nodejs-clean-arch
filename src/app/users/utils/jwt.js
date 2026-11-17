@@ -4,7 +4,7 @@ const ACCESS_TOKEN_SECRET = "ASDFHASDJKFFHWUIOEFHDFJKASDH";
 const REFRESH_TOKEN_SECRET = "XCVNASFLQQASDFJKQQRIPWUTUIOJ";
 
 export const signAccessToken = async (user) => {
-  return jwt.sign(user, ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+  return jwt.sign({ user }, ACCESS_TOKEN_SECRET, { expiresIn: "30s" });
 };
 
 export const signRefreshToken = async (user) => {

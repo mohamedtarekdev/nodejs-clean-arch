@@ -1,14 +1,29 @@
 import * as userRepo from "../repository/user.repository.js";
 import { comparePassword, hashPassword } from "../utils/hash.js";
-import { signAccessToken, signRefreshToken } from "../utils/jwt.js";
+import {
+  signAccessToken,
+  signRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+} from "../utils/jwt.js";
 
 export const register = async (data) => {
-  const user = await userRepo.findByEmail(data.email);
-  if (user) throw new Error("User already exists");
+  const existingUser = await userRepo.findByEmail(data.email);
 
-  data.password = await hashPassword(data.password);
+  if (existingUser) {
+    throw new Error("User already exists");
+  }
 
-  return userRepo.create(data);
+  const hashedPassword = await hashPassword(data.password);
+
+  const user = await userRepo.create({
+    ...data,
+    password: hashedPassword,
+  });
+
+  const { password, ...safeUser } = user;
+
+  return safeUser;
 };
 
 export const login = async (data) => {
@@ -22,19 +37,20 @@ export const login = async (data) => {
   const accessToken = await signAccessToken(user);
   const refreshToken = await signRefreshToken(user);
 
-  user.accessToken = accessToken;
-  user.refreshToken = refreshToken;
-  delete user.password;
+  const { password, ...safeUser } = user;
 
-  return user;
+  safeUser.accessToken = accessToken;
+  safeUser.refreshToken = refreshToken;
+
+  return safeUser;
 };
 
-export const getMe = async (token) => verifyAccessToken(token);
+export const getMe = async (token) => await verifyAccessToken(token);
 
 export const refresh = async (token) => {
-  const user = verifyRefreshToken(token);
+  const user = await verifyRefreshToken(token);
 
-  const accessToken = signAccessToken(user);
+  const accessToken = await signAccessToken(user);
 
-  return accessToken;
+  return { accessToken };
 };
