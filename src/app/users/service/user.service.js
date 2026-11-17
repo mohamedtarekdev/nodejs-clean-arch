@@ -1,3 +1,4 @@
+import { INVALID_DATA_ERROR, USER_ALREADY_EXISTS_ERROR } from "../error.js";
 import * as userRepo from "../repository/user.repository.js";
 import { comparePassword, hashPassword } from "../utils/hash.js";
 import {
@@ -11,7 +12,7 @@ export const register = async (data) => {
   const existingUser = await userRepo.findByEmail(data.email);
 
   if (existingUser) {
-    throw new Error("User already exists");
+    throw USER_ALREADY_EXISTS_ERROR;
   }
 
   const hashedPassword = await hashPassword(data.password);
@@ -29,10 +30,10 @@ export const register = async (data) => {
 export const login = async (data) => {
   const user = await userRepo.findByEmail(data.email);
 
-  if (!user) throw new Error("Invalid Data");
+  if (!user) throw INVALID_DATA_ERROR;
 
   const isValidPassword = await comparePassword(data.password, user.password);
-  if (!isValidPassword) throw new Error("Invalid Data");
+  if (!isValidPassword) throw INVALID_DATA_ERROR;
 
   const accessToken = await signAccessToken(user);
   const refreshToken = await signRefreshToken(user);
